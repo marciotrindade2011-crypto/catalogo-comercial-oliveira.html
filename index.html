@@ -11,24 +11,24 @@
 
     <!-- CABEÇALHO DO CATÁLOGO -->
     <header class="bg-blue-900 text-white shadow-md sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-3">
             <div>
                 <h1 class="text-xl font-bold flex items-center gap-2">
                     <i class="fa-solid fa-store text-amber-400"></i> Comercial Oliveira
                 </h1>
                 <p id="lbl-endereco-loja" class="text-xs text-blue-200">Elétrica, Hidráulica & Materiais de Construção</p>
             </div>
-            <div class="relative w-1/2 sm:w-72">
+            <div class="relative w-full sm:w-80">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
-                <input type="text" id="busca-catalogo" placeholder="Buscar produto..." oninput="renderizarCatalogo()" class="border rounded-lg pl-9 pr-3 py-1.5 text-sm w-full bg-slate-800/50 text-white placeholder-slate-300 focus:outline-none focus:bg-white focus:text-slate-800">
+                <input type="text" id="busca-catalogo" placeholder="Buscar produto..." oninput="renderizarCatalogo()" class="border rounded-lg pl-9 pr-3 py-2 text-sm w-full bg-slate-800/50 text-white placeholder-slate-300 focus:outline-none focus:bg-white focus:text-slate-800">
             </div>
         </div>
     </header>
 
     <main class="container mx-auto px-4 py-6 max-w-6xl">
-        <div class="mb-4 text-center sm:text-left">
-            <h2 class="text-lg font-bold text-slate-700">Catálogo de Produtos Disponíveis</h2>
-            <p class="text-xs text-slate-500">Escolha os itens desejados, selecione a quantidade, monte seu carrinho e envie o pedido!</p>
+        <div class="mb-6 text-center sm:text-left">
+            <h2 class="text-xl font-bold text-slate-700">Catálogo de Produtos Disponíveis</h2>
+            <p class="text-xs text-slate-500">Escolha os produtos, defina a quantidade, monte seu carrinho e envie o pedido diretamente pelo WhatsApp!</p>
         </div>
 
         <!-- GRADE DE PRODUTOS -->
@@ -125,9 +125,8 @@
     <!-- SCRIPT -->
     <script>
         let produtos = JSON.parse(localStorage.getItem('ol_produtos')) || [
-            { id: 1, nome: 'Cabo Flexível 2,5mm² (100m)', cat: 'Elétrica', tipoVenda: 'unidade', venda: 145.00, estoque: 15, foto: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=300' }
+            { id: 1, nome: 'Cabo Flexível 2,5mm² (100m)', cat: 'Elétrica', venda: 145.00, estoque: 15, foto: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=300' }
         ];
-
         let enderecoLoja = localStorage.getItem('ol_endereco_loja') || 'Elétrica, Hidráulica & Materiais de Construção';
         let carrinhoCliente = [];
 
@@ -136,19 +135,6 @@
             if (lblEnd) lblEnd.innerText = enderecoLoja;
             renderizarCatalogo();
         });
-
-        function calcularPrecoItem(produto, qtd) {
-            if (produto.tipoVenda === 'linear') {
-                const avulso = produto.vendaAvulso || 0;
-                const barra = produto.vendaBarra || 0;
-                const proporcao = barra / 6;
-                if (qtd < 6) return qtd * avulso;
-                const barras = Math.floor(qtd / 6);
-                const restantes = qtd % 6;
-                return (barras * barra) + (restantes * proporcao);
-            }
-            return qtd * (produto.venda || 0);
-        }
 
         function renderizarCatalogo() {
             const termo = document.getElementById('busca-catalogo').value.toLowerCase().trim();
@@ -168,11 +154,9 @@
                     <div>
                         <img src="${p.foto}" class="w-full h-40 object-cover border-b" onerror="this.src='https://via.placeholder.com/300'">
                         <div class="p-4">
-                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded font-medium">${p.cat}</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded font-medium">${p.cat || 'Geral'}</span>
                             <h3 class="font-bold text-slate-800 mt-2 text-sm">${p.nome}</h3>
-                            <p class="text-green-700 font-extrabold text-base mt-1 mb-3">
-                                ${p.tipoVenda === 'linear' ? `R$ ${p.vendaAvulso.toFixed(2)}/m <span class="text-xs font-normal text-slate-500 block">Barra 6m: R$ ${p.vendaBarra.toFixed(2)}</span>` : `R$ ${p.venda.toFixed(2)}`}
-                            </p>
+                            <p class="text-green-700 font-extrabold text-base mt-1 mb-3">R$ ${p.venda.toFixed(2)}</p>
                             <button onclick="adicionarAoCarrinho(${p.id})" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-2 shadow">
                                 <i class="fa-solid fa-cart-plus"></i> Adicionar ao Carrinho
                             </button>
@@ -198,7 +182,7 @@
             if (itemExistente) {
                 itemExistente.qtd += qtd;
             } else {
-                carrinhoCliente.push({ id: p.id, nome: p.nome, tipoVenda: p.tipoVenda, qtd });
+                carrinhoCliente.push({ id: p.id, nome: p.nome, venda: p.venda, qtd });
             }
 
             atualizarBotaoFlutuante();
@@ -236,13 +220,12 @@
             }
 
             container.innerHTML = carrinhoCliente.map((item, index) => {
-                const pRef = produtos.find(p => p.id == item.id);
-                const sub = calcularPrecoItem(pRef, item.qtd);
+                const sub = item.qtd * item.venda;
                 return `
                     <div class="flex justify-between items-center py-2 text-xs">
                         <div>
                             <p class="font-bold text-slate-800">${item.nome}</p>
-                            <p class="text-slate-500">${item.qtd} ${item.tipoVenda === 'linear' ? 'm' : 'un.'}</p>
+                            <p class="text-slate-500">${item.qtd} un. x R$ ${item.venda.toFixed(2)}</p>
                         </div>
                         <div class="flex items-center gap-3">
                             <span class="font-bold text-green-700">R$ ${sub.toFixed(2)}</span>
@@ -256,10 +239,7 @@
 
         function atualizarTotais() {
             let subtotal = 0;
-            carrinhoCliente.forEach(item => {
-                const p = produtos.find(prod => prod.id == item.id);
-                if (p) subtotal += calcularPrecoItem(p, item.qtd);
-            });
+            carrinhoCliente.forEach(item => { subtotal += item.qtd * item.venda; });
             const frete = parseFloat(document.getElementById('cli-frete').value) || 0;
             const total = subtotal + frete;
 
@@ -308,15 +288,14 @@
             msg += `\n\n📦 *Itens do Pedido:*\n`;
 
             carrinhoCliente.forEach(item => {
-                const p = produtos.find(prod => prod.id == item.id);
-                const sub = calcularPrecoItem(p, item.qtd);
+                const sub = item.qtd * item.venda;
                 subtotal += sub;
                 msg += `- ${item.qtd}x ${item.nome} (R$ ${sub.toFixed(2)})\n`;
-                p.estoque = Math.max(0, p.estoque - item.qtd);
+                const p = produtos.find(prod => prod.id == item.id);
+                if (p) p.estoque = Math.max(0, p.estoque - item.qtd);
             });
 
             localStorage.setItem('ol_produtos', JSON.stringify(produtos));
-
             const frete = parseFloat(document.getElementById('cli-frete').value) || 0;
             const total = subtotal + frete;
 
