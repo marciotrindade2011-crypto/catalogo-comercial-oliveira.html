@@ -123,7 +123,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE SINCRONIZAÇÃO E EXIBIÇÃO TOTAL -->
+    <!-- SCRIPT DE SINCRONIZAÇÃO COMPLETA -->
     <script>
         let produtos = JSON.parse(localStorage.getItem('ol_produtos')) || [];
         let enderecoLoja = localStorage.getItem('ol_endereco_loja') || 'Elétrica, Hidráulica & Materiais de Construção';
@@ -152,15 +152,15 @@
             const termo = document.getElementById('busca-catalogo').value.toLowerCase().trim();
             const grade = document.getElementById('grade-catalogo');
             
-            // Lê todos os produtos do sistema em tempo real
+            // Puxa todos os produtos salvos no sistema de gestão (localStorage)
             produtos = JSON.parse(localStorage.getItem('ol_produtos')) || [];
             
-            // AGORA MOSTRA TODOS OS PRODUTOS CADASTRADOS (mesmo com estoque zerado)
+            // Filtra os produtos com base na busca digitada
             let filtrados = produtos.filter(p => p.nome && p.nome.toLowerCase().includes(termo));
             filtrados.sort((a, b) => a.nome.localeCompare(b.nome));
 
             if (filtrados.length === 0) {
-                grade.innerHTML = '<p class="col-span-full text-center text-slate-400 py-12">Nenhum produto cadastrado.</p>';
+                grade.innerHTML = '<p class="col-span-full text-center text-slate-400 py-12">Nenhum produto cadastrado no sistema.</p>';
                 return;
             }
 
@@ -337,7 +337,7 @@
                     subtotal += sub;
                     msg += `- ${item.qtd} ${p.tipoVenda === 'linear' ? 'm' : 'un.'} x ${item.nome} (R$ ${sub.toFixed(2)})\n`;
                     
-                    // Baixa automática de estoque
+                    // Baixa automática de estoque no sistema
                     p.estoque = Math.max(0, p.estoque - item.qtd);
                     const minimo = p.minimo !== undefined ? p.minimo : 3;
                     if (p.estoque <= minimo) {
