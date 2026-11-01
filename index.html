@@ -123,17 +123,32 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE SINCRONIZAÇÃO COMPLETA -->
+    <!-- SCRIPT DE SINCRONIZAÇÃO DIRETA -->
     <script>
-        let produtos = JSON.parse(localStorage.getItem('ol_produtos')) || [];
+        let produtos = [];
         let enderecoLoja = localStorage.getItem('ol_endereco_loja') || 'Elétrica, Hidráulica & Materiais de Construção';
         let carrinhoCliente = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             const lblEnd = document.getElementById('lbl-endereco-loja');
             if (lblEnd) lblEnd.innerText = enderecoLoja;
+            
+            carregarProdutosDoSistema();
             renderizarCatalogo();
         });
+
+        function carregarProdutosDoSistema() {
+            const dadosSalvos = localStorage.getItem('ol_produtos');
+            if (dadosSalvos) {
+                produtos = JSON.parse(dadosSalvos);
+            } else {
+                // Se não houver nada no localStorage, define dados iniciais para teste
+                produtos = [
+                    { id: 1, nome: 'Cabo Flexível 2,5mm² (100m)', cat: 'Elétrica', tipoVenda: 'unidade', venda: 145.00, estoque: 15, foto: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=300' }
+                ];
+                localStorage.setItem('ol_produtos', JSON.stringify(produtos));
+            }
+        }
 
         function calcularPrecoItemCatalogo(produto, qtd) {
             if (produto.tipoVenda === 'linear') {
@@ -152,20 +167,20 @@
             const termo = document.getElementById('busca-catalogo').value.toLowerCase().trim();
             const grade = document.getElementById('grade-catalogo');
             
-            // Puxa todos os produtos salvos no sistema de gestão (localStorage)
-            produtos = JSON.parse(localStorage.getItem('ol_produtos')) || [];
+            // Atualiza sempre buscando do localStorage do sistema principal
+            carregarProdutosDoSistema();
             
-            // Filtra os produtos com base na busca digitada
             let filtrados = produtos.filter(p => p.nome && p.nome.toLowerCase().includes(termo));
             filtrados.sort((a, b) => a.nome.localeCompare(b.nome));
 
             if (filtrados.length === 0) {
-                grade.innerHTML = '<p class="col-span-full text-center text-slate-400 py-12">Nenhum produto cadastrado no sistema.</p>';
+                grade.innerHTML = '<p class="col-span-full text-center text-slate-400 py-12">Nenhum produto encontrado no sistema.</p>';
                 return;
             }
 
             grade.innerHTML = filtrados.map(p => {
-                const emFalta = (p.estoque || 0) <= 0;
+                const qtdEstoque = p.estoque !== undefined ? p.estoque : 0;
+                const emFalta = qtdEstoque <= 0;
                 const precoExibido = p.tipoVenda === 'linear' 
                     ? `R$ ${(p.vendaAvulso || 0).toFixed(2)}/m <span class="text-xs font-normal text-slate-500 block">Barra 6m: R$ ${(p.vendaBarra || 0).toFixed(2)}</span>` 
                     : `R$ ${(p.venda || 0).toFixed(2)}`;
@@ -177,7 +192,7 @@
                             <div class="p-4">
                                 <div class="flex justify-between items-center mb-1">
                                     <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded font-medium">${p.cat || 'Geral'}</span>
-                                    ${emFalta ? '<span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">Falta</span>' : `<span class="text-xs text-slate-500">Estoque: ${p.estoque}</span>`}
+                                    ${emFalta ? '<span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">Falta</span>' : `<span class="text-xs text-slate-500">Estoque: ${qtdEstoque}</span>`}
                                 </div>
                                 <h3 class="font-bold text-slate-800 mt-2 text-sm">${p.nome}</h3>
                                 <p class="text-green-700 font-extrabold text-base mt-1 mb-3">${precoExibido}</p>
@@ -196,7 +211,7 @@
         }
 
         function adicionarAoCarrinho(id) {
-            produtos = JSON.parse(localStorage.getItem('ol_produtos')) || [];
+            carregarProdutosDoSistema();
             const p = produtos.find(item => item.id == id);
             if (!p || p.estoque <= 0) return;
 
@@ -322,7 +337,7 @@
                 return;
             }
 
-            produtos = JSON.parse(localStorage.getItem('ol_produtos')) || [];
+            carregarProdutosDoSistema();
 
             let subtotal = 0;
             let msg = `🛒 *NOVO PEDIDO - CATÁLOGO ONLINE*\n\n`;
@@ -337,7 +352,7 @@
                     subtotal += sub;
                     msg += `- ${item.qtd} ${p.tipoVenda === 'linear' ? 'm' : 'un.'} x ${item.nome} (R$ ${sub.toFixed(2)})\n`;
                     
-                    // Baixa automática de estoque no sistema
+                    // Dá baixa imediata no estoque do sistema
                     p.estoque = Math.max(0, p.estoque - item.qtd);
                     const minimo = p.minimo !== undefined ? p.minimo : 3;
                     if (p.estoque <= minimo) {
@@ -346,6 +361,7 @@
                 }
             });
 
+            // Atualiza de volta no localStorage para sincronizar com o gestor
             localStorage.setItem('ol_produtos', JSON.stringify(produtos));
 
             const frete = parseFloat(document.getElementById('cli-frete').value) || 0;
