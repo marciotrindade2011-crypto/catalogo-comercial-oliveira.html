@@ -31,8 +31,8 @@
                 <h2 class="text-xl font-bold text-slate-700">Catálogo de Produtos Disponíveis</h2>
                 <p class="text-xs text-slate-500">Escolha os produtos, defina a quantidade, monte seu carrinho e envie o pedido diretamente pelo WhatsApp!</p>
             </div>
-            <button onclick="forcarAtualizacaoCatalogo()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-3 py-2 rounded-lg text-xs shadow transition flex items-center gap-1.5">
-                <i class="fa-solid fa-rotate"></i> Atualizar Produtos do Sistema
+            <button onclick="renderizarCatalogo()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg text-xs shadow transition flex items-center gap-1.5">
+                <i class="fa-solid fa-rotate"></i> Atualizar Catálogo
             </button>
         </div>
 
@@ -128,43 +128,24 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE SINCRONIZAÇÃO FORÇADA -->
+    <!-- SCRIPT DE LEITURA DIRETA DO SISTEMA -->
     <script>
-        let produtos = [];
         let enderecoLoja = localStorage.getItem('ol_endereco_loja') || 'Elétrica, Hidráulica & Materiais de Construção';
         let carrinhoCliente = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             const lblEnd = document.getElementById('lbl-endereco-loja');
             if (lblEnd) lblEnd.innerText = enderecoLoja;
-            
-            carregarProdutosDoSistema();
             renderizarCatalogo();
         });
 
-        function carregarProdutosDoSistema() {
-            const dadosSalvos = localStorage.getItem('ol_produtos');
-            if (dadosSalvos) {
-                produtos = JSON.parse(dadosSalvos);
-            } else {
-                // Lista completa padrão caso o armazenamento esteja totalmente limpo
-                produtos = [
-                    { id: 1, nome: 'Cabo Flexível 2,5mm² (100m)', cat: 'Elétrica', tipoVenda: 'unidade', venda: 145.00, estoque: 15, minimo: 5, foto: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=300' },
-                    { id: 2, nome: 'Disjuntor DIN 32A Monopolar', cat: 'Elétrica', tipoVenda: 'unidade', venda: 22.00, estoque: 3, minimo: 3, foto: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=300' },
-                    { id: 3, nome: 'Tubo PVC Soldável 25mm (6m)', cat: 'Hidráulica', tipoVenda: 'linear', vendaAvulso: 4.98, vendaBarra: 29.90, estoque: 20, minimo: 5, foto: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=300' },
-                    { id: 4, nome: 'Joelho LL 1/2 20mm', cat: 'Hidráulica', tipoVenda: 'unidade', venda: 1.20, estoque: 49, minimo: 10, foto: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=300' },
-                    { id: 5, nome: 'Joelho LL 3/4 25mm', cat: 'Hidráulica', tipoVenda: 'unidade', venda: 2.00, estoque: 50, minimo: 10, foto: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=300' }
-                ];
-                localStorage.setItem('ol_produtos', JSON.stringify(produtos));
+        function obterProdutos() {
+            // Puxa exatamente os produtos cadastrados no seu sistema de gestão (index.html)
+            const salvos = localStorage.getItem('ol_produtos');
+            if (salvos) {
+                return JSON.parse(salvos);
             }
-        }
-
-        // Botão de pânico/atualização manual para forçar recarga imediata
-        function forcarAtualizacaoCatalogo() {
-            localStorage.removeItem('ol_produtos');
-            carregarProdutosDoSistema();
-            renderizarCatalogo();
-            alert('🔄 Produtos atualizados e sincronizados com sucesso!');
+            return [];
         }
 
         function calcularPrecoItemCatalogo(produto, qtd) {
@@ -184,13 +165,13 @@
             const termo = document.getElementById('busca-catalogo').value.toLowerCase().trim();
             const grade = document.getElementById('grade-catalogo');
             
-            carregarProdutosDoSistema();
+            const produtos = obterProdutos();
             
             let filtrados = produtos.filter(p => p.nome && p.nome.toLowerCase().includes(termo));
             filtrados.sort((a, b) => a.nome.localeCompare(b.nome));
 
             if (filtrados.length === 0) {
-                grade.innerHTML = '<p class="col-span-full text-center text-slate-400 py-12">Nenhum produto cadastrado no sistema.</p>';
+                grade.innerHTML = '<p class="col-span-full text-center text-slate-400 py-12">Nenhum produto cadastrado no sistema ainda. Cadastre na aba Produtos do seu PDV.</p>';
                 return;
             }
 
@@ -227,7 +208,7 @@
         }
 
         function adicionarAoCarrinho(id) {
-            carregarProdutosDoSistema();
+            const produtos = obterProdutos();
             const p = produtos.find(item => item.id == id);
             if (!p || p.estoque <= 0) return;
 
@@ -287,6 +268,7 @@
                 return;
             }
 
+            const produtos = obterProdutos();
             container.innerHTML = carrinhoCliente.map((item, index) => {
                 const p = produtos.find(prod => prod.id == item.id);
                 const sub = p ? calcularPrecoItemCatalogo(p, item.qtd) : 0;
@@ -308,6 +290,7 @@
 
         function atualizarTotais() {
             let subtotal = 0;
+            const produtos = obterProdutos();
             carrinhoCliente.forEach(item => {
                 const p = produtos.find(prod => prod.id == item.id);
                 if (p) subtotal += calcularPrecoItemCatalogo(p, item.qtd);
@@ -353,7 +336,7 @@
                 return;
             }
 
-            carregarProdutosDoSistema();
+            let produtos = obterProdutos();
 
             let subtotal = 0;
             let msg = `🛒 *NOVO PEDIDO - CATÁLOGO ONLINE*\n\n`;
