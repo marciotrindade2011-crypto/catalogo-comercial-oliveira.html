@@ -123,7 +123,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE SINCRONIZAÇÃO DIRETA -->
+    <!-- SCRIPT DE CARREGAMENTO ROBUSTO -->
     <script>
         let produtos = [];
         let enderecoLoja = localStorage.getItem('ol_endereco_loja') || 'Elétrica, Hidráulica & Materiais de Construção';
@@ -142,11 +142,7 @@
             if (dadosSalvos) {
                 produtos = JSON.parse(dadosSalvos);
             } else {
-                // Se não houver nada no localStorage, define dados iniciais para teste
-                produtos = [
-                    { id: 1, nome: 'Cabo Flexível 2,5mm² (100m)', cat: 'Elétrica', tipoVenda: 'unidade', venda: 145.00, estoque: 15, foto: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=300' }
-                ];
-                localStorage.setItem('ol_produtos', JSON.stringify(produtos));
+                produtos = [];
             }
         }
 
@@ -167,14 +163,13 @@
             const termo = document.getElementById('busca-catalogo').value.toLowerCase().trim();
             const grade = document.getElementById('grade-catalogo');
             
-            // Atualiza sempre buscando do localStorage do sistema principal
             carregarProdutosDoSistema();
             
             let filtrados = produtos.filter(p => p.nome && p.nome.toLowerCase().includes(termo));
             filtrados.sort((a, b) => a.nome.localeCompare(b.nome));
 
             if (filtrados.length === 0) {
-                grade.innerHTML = '<p class="col-span-full text-center text-slate-400 py-12">Nenhum produto encontrado no sistema.</p>';
+                grade.innerHTML = '<p class="col-span-full text-center text-slate-400 py-12">Nenhum produto cadastrado no sistema ainda. Cadastre produtos na aba Produtos do seu sistema de gestão.</p>';
                 return;
             }
 
@@ -352,7 +347,6 @@
                     subtotal += sub;
                     msg += `- ${item.qtd} ${p.tipoVenda === 'linear' ? 'm' : 'un.'} x ${item.nome} (R$ ${sub.toFixed(2)})\n`;
                     
-                    // Dá baixa imediata no estoque do sistema
                     p.estoque = Math.max(0, p.estoque - item.qtd);
                     const minimo = p.minimo !== undefined ? p.minimo : 3;
                     if (p.estoque <= minimo) {
@@ -361,7 +355,6 @@
                 }
             });
 
-            // Atualiza de volta no localStorage para sincronizar com o gestor
             localStorage.setItem('ol_produtos', JSON.stringify(produtos));
 
             const frete = parseFloat(document.getElementById('cli-frete').value) || 0;
