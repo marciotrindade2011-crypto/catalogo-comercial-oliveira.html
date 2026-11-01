@@ -28,7 +28,7 @@
     <main class="container mx-auto px-4 py-6 max-w-6xl">
         <div class="mb-4 text-center sm:text-left">
             <h2 class="text-lg font-bold text-slate-700">Catálogo de Produtos Disponíveis</h2>
-            <p class="text-xs text-slate-500">Escolha os itens desejados, monte seu carrinho e envie o pedido direto pelo WhatsApp!</p>
+            <p class="text-xs text-slate-500">Escolha os itens desejados, selecione a quantidade, monte seu carrinho e envie o pedido!</p>
         </div>
 
         <!-- GRADE DE PRODUTOS -->
@@ -43,7 +43,7 @@
         </button>
     </div>
 
-    <!-- MODAL DE CHECKOUT E ENDEREÇO -->
+    <!-- MODAL DE CHECKOUT, PAGAMENTO E ENDEREÇO -->
     <div id="modal-carrinho" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b pb-3">
@@ -60,7 +60,7 @@
                 <div class="flex justify-between font-bold text-blue-900 border-t pt-1 text-base"><span>Total:</span> <span id="modal-total">R$ 0,00</span></div>
             </div>
 
-            <!-- FORMULÁRIO DE DADOS E BUSCA INTELIGENTE POR CEP -->
+            <!-- FORMULÁRIO DE DADOS, PAGAMENTO E BUSCA POR CEP -->
             <div class="space-y-3 border-t pt-3">
                 <h4 class="font-bold text-xs uppercase text-slate-600"><i class="fa-solid fa-user"></i> Endereço e Dados para Entrega</h4>
                 <div>
@@ -122,9 +122,8 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE SINCRONIZAÇÃO E FUNCIONAMENTO -->
+    <!-- SCRIPT -->
     <script>
-        // Sincroniza com a mesma base de dados do sistema principal (localStorage)
         let produtos = JSON.parse(localStorage.getItem('ol_produtos')) || [
             { id: 1, nome: 'Cabo Flexível 2,5mm² (100m)', cat: 'Elétrica', tipoVenda: 'unidade', venda: 145.00, estoque: 15, foto: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=300' }
         ];
@@ -155,7 +154,6 @@
             const termo = document.getElementById('busca-catalogo').value.toLowerCase().trim();
             const grade = document.getElementById('grade-catalogo');
             
-            // Recarrega do localStorage caso tenha havido alterações no painel de gestão
             produtos = JSON.parse(localStorage.getItem('ol_produtos')) || produtos;
             let filtrados = produtos.filter(p => p.nome && p.nome.toLowerCase().includes(termo) && (p.estoque || 0) > 0);
             filtrados.sort((a, b) => a.nome.localeCompare(b.nome));
@@ -270,7 +268,6 @@
             document.getElementById('modal-total').innerText = `R$ ${total.toFixed(2)}`;
         }
 
-        // BUSCA INTELIGENTE POR CEP (VIA CEP)
         async function buscarCepCatalogo(cep) {
             const cepLimpo = cep.replace(/\D/g, '');
             if (cepLimpo.length !== 8) return;
@@ -315,12 +312,9 @@
                 const sub = calcularPrecoItem(p, item.qtd);
                 subtotal += sub;
                 msg += `- ${item.qtd}x ${item.nome} (R$ ${sub.toFixed(2)})\n`;
-                
-                // Atualiza o estoque local do catálogo
                 p.estoque = Math.max(0, p.estoque - item.qtd);
             });
 
-            // Salva o estoque atualizado no localStorage
             localStorage.setItem('ol_produtos', JSON.stringify(produtos));
 
             const frete = parseFloat(document.getElementById('cli-frete').value) || 0;
