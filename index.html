@@ -26,9 +26,14 @@
     </header>
 
     <main class="container mx-auto px-4 py-6 max-w-6xl">
-        <div class="mb-6 text-center sm:text-left bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-            <h2 class="text-xl font-bold text-slate-700">Catálogo de Produtos Disponíveis</h2>
-            <p class="text-xs text-slate-500">Escolha os produtos, defina a quantidade, monte seu carrinho e envie o pedido diretamente pelo WhatsApp!</p>
+        <div class="mb-6 text-center sm:text-left bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <h2 class="text-xl font-bold text-slate-700">Catálogo de Produtos Disponíveis</h2>
+                <p class="text-xs text-slate-500">Escolha os produtos, defina a quantidade, monte seu carrinho e envie o pedido diretamente pelo WhatsApp!</p>
+            </div>
+            <button onclick="forcarAtualizacaoCatalogo()" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-3 py-2 rounded-lg text-xs shadow transition flex items-center gap-1.5">
+                <i class="fa-solid fa-rotate"></i> Atualizar Produtos do Sistema
+            </button>
         </div>
 
         <!-- GRADE DE PRODUTOS -->
@@ -123,7 +128,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE LEITURA TOTAL DO SISTEMA -->
+    <!-- SCRIPT DE SINCRONIZAÇÃO FORÇADA -->
     <script>
         let produtos = [];
         let enderecoLoja = localStorage.getItem('ol_endereco_loja') || 'Elétrica, Hidráulica & Materiais de Construção';
@@ -142,7 +147,7 @@
             if (dadosSalvos) {
                 produtos = JSON.parse(dadosSalvos);
             } else {
-                // Sincroniza com os mesmos produtos da imagem caso esteja vazio
+                // Lista completa padrão caso o armazenamento esteja totalmente limpo
                 produtos = [
                     { id: 1, nome: 'Cabo Flexível 2,5mm² (100m)', cat: 'Elétrica', tipoVenda: 'unidade', venda: 145.00, estoque: 15, minimo: 5, foto: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=300' },
                     { id: 2, nome: 'Disjuntor DIN 32A Monopolar', cat: 'Elétrica', tipoVenda: 'unidade', venda: 22.00, estoque: 3, minimo: 3, foto: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=300' },
@@ -152,6 +157,14 @@
                 ];
                 localStorage.setItem('ol_produtos', JSON.stringify(produtos));
             }
+        }
+
+        // Botão de pânico/atualização manual para forçar recarga imediata
+        function forcarAtualizacaoCatalogo() {
+            localStorage.removeItem('ol_produtos');
+            carregarProdutosDoSistema();
+            renderizarCatalogo();
+            alert('🔄 Produtos atualizados e sincronizados com sucesso!');
         }
 
         function calcularPrecoItemCatalogo(produto, qtd) {
