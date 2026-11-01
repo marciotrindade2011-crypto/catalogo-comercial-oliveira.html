@@ -60,7 +60,7 @@
                 <div class="flex justify-between font-bold text-blue-900 border-t pt-1 text-base"><span>Total:</span> <span id="modal-total">R$ 0,00</span></div>
             </div>
 
-            <!-- FORMULÁRIO DE DADOS, PAGAMENTO E BUSCA POR CEP -->
+            <!-- FORMULÁRIO DE DADOS E PAGAMENTO -->
             <div class="space-y-3 border-t pt-3">
                 <h4 class="font-bold text-xs uppercase text-slate-600"><i class="fa-solid fa-user"></i> Endereço e Dados para Entrega</h4>
                 <div>
@@ -123,7 +123,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DE SINCRONIZAÇÃO COMPLETA -->
+    <!-- SCRIPT DE LEITURA TOTAL DO SISTEMA -->
     <script>
         let produtos = [];
         let enderecoLoja = localStorage.getItem('ol_endereco_loja') || 'Elétrica, Hidráulica & Materiais de Construção';
@@ -142,10 +142,13 @@
             if (dadosSalvos) {
                 produtos = JSON.parse(dadosSalvos);
             } else {
-                // Se não houver dados salvos no navegador, carrega os mesmos exemplos iniciais do sistema principal
+                // Sincroniza com os mesmos produtos da imagem caso esteja vazio
                 produtos = [
                     { id: 1, nome: 'Cabo Flexível 2,5mm² (100m)', cat: 'Elétrica', tipoVenda: 'unidade', venda: 145.00, estoque: 15, minimo: 5, foto: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=300' },
-                    { id: 2, nome: 'Tubo PVC 1/2 (Linear)', cat: 'Hidráulica', tipoVenda: 'linear', vendaAvulso: 4.00, vendaBarra: 18.00, estoque: 2, minimo: 5, foto: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=300' }
+                    { id: 2, nome: 'Disjuntor DIN 32A Monopolar', cat: 'Elétrica', tipoVenda: 'unidade', venda: 22.00, estoque: 3, minimo: 3, foto: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=300' },
+                    { id: 3, nome: 'Tubo PVC Soldável 25mm (6m)', cat: 'Hidráulica', tipoVenda: 'linear', vendaAvulso: 4.98, vendaBarra: 29.90, estoque: 20, minimo: 5, foto: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=300' },
+                    { id: 4, nome: 'Joelho LL 1/2 20mm', cat: 'Hidráulica', tipoVenda: 'unidade', venda: 1.20, estoque: 49, minimo: 10, foto: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=300' },
+                    { id: 5, nome: 'Joelho LL 3/4 25mm', cat: 'Hidráulica', tipoVenda: 'unidade', venda: 2.00, estoque: 50, minimo: 10, foto: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=300' }
                 ];
                 localStorage.setItem('ol_produtos', JSON.stringify(produtos));
             }
@@ -352,7 +355,6 @@
                     subtotal += sub;
                     msg += `- ${item.qtd} ${p.tipoVenda === 'linear' ? 'm' : 'un.'} x ${item.nome} (R$ ${sub.toFixed(2)})\n`;
                     
-                    // Baixa automática no estoque do sistema
                     p.estoque = Math.max(0, p.estoque - item.qtd);
                     const minimo = p.minimo !== undefined ? p.minimo : 3;
                     if (p.estoque <= minimo) {
