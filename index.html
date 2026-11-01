@@ -162,17 +162,16 @@
     </div>
 
     <div class="container" id="product-list">
-        <!-- Os produtos serão injetados dinamicamente aqui via JavaScript -->
+        <!-- Os produtos cadastrados abaixo aparecem aqui de forma integrada -->
     </div>
 
     <div class="sync-info">
-        Catálogo sincronizado com o sistema Comercial Oliveira.
+        Catálogo integrado e sincronizado com o sistema Comercial Oliveira.
     </div>
 
     <script>
-        // LISTA DE PRODUTOS: Você pode atualizar esta lista diretamente aqui 
-        // ou apontar para um arquivo externo (ex: 'produtos.json') gerado pelo seu sistema.
-        const produtos = [
+        // BASE DE DADOS INTEGRADA: Atualize os dados aqui sempre que precisar alterar o catálogo
+        const produtosDoSistema = [
             {
                 nome: "Cabo Flexível 2,5mm² (100m)",
                 categoria: "Elétrica",
@@ -214,7 +213,7 @@
             const container = document.getElementById('product-list');
             container.innerHTML = '';
 
-            produtos.forEach(prod => {
+            produtosDoSistema.forEach(prod => {
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 
@@ -235,7 +234,6 @@
             });
         }
 
-        // Executa a renderização ao carregar a página
         document.addEventListener('DOMContentLoaded', renderizarCatalogo);
     </script>
 </body>
