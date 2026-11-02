@@ -24,4 +24,23 @@
     </header>
     <main class="container mx-auto px-4 py-6 max-w-6xl">
         <div class="mb-6 bg-white p-4 rounded-xl shadow-sm border flex flex-col sm:flex-row justify-between items-center gap-2">
-            <div
+            <div>
+                <h2 class="text-lg font-bold text-slate-700">Produtos Disponíveis</h2>
+                <p class="text-xs text-slate-500">Selecione os itens desejados para montar o seu orçamento.</p>
+            </div>
+            <div id="status-carrinho" class="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                <i class="fa-solid fa-cart-shopping"></i> Carrinho Vazio
+            </div>
+        </div>
+        
+        <!-- Lista de Produtos / Grade -->
+        <div id="grid-produtos" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <!-- Os produtos serão injetados dinamicamente ou inseridos aqui -->
+        </div>
+    </main>
+
+    <footer class="bg-white border-t py-4 text-center text-xs text-slate-500 fixed bottom-0 left-0 w-full shadow-inner">
+        <p>Comercial Oliveira &copy; 2026 - Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>
